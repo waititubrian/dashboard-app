@@ -6,7 +6,7 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const user = await getUsexrById(Number(id));
+  const user = await getUserById(Number(id));
 
   return Response.json(user);
 }

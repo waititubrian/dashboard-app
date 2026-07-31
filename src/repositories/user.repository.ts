@@ -29,7 +29,7 @@ export async function updateUser(
   id: number,
   name: string,
   email: string,
-  active: boolean,
+  active: boolean
 ) {
   return prisma.user.update({
     where: {

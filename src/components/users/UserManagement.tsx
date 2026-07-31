@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import UserTable from "./UserTable";
+import UserForm from "./UserForm";
 
 export interface User {
   id: number;
@@ -25,10 +27,16 @@ export default function UserManagement() {
   }
 
   return (
-    <div>
-      <h1>User Management</h1>
+    <div
+      className="max-w-5xl mx-auto p-8"
+    >
+      <h1 className="text-3xl font-bold mb-2">User Management</h1>
 
-      <p>Total Users: {users.length}</p>
+      <p className=" text-gray-400 mb-6">Total Users: {users.length}</p>
+
+      <UserForm onUserCreated={loadUsers} />
+
+      <UserTable users={users} />
     </div>
   );
 }
