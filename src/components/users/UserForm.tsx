@@ -1,41 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { User } from "@/types/user";
 
 interface UserFormProps {
-  onUserCreated: () => Promise<void>;
+  selectedUser: User | null;
+  onUserSaved: () => Promise<void>;
+  onCancelEdit: () => void;
 }
 
 export default function UserForm({
-  onUserCreated,
+  selectedUser,
+  onUserSaved,
+  onCancelEdit,
 }: UserFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (selectedUser) {
+      setName(selectedUser.name);
+      setEmail(selectedUser.email);
+    } else {
+      setName("");
+      setEmail("");
+    }
+  }, [selectedUser]);
+
   async function createUser() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/users", {
-        method: "POST",
+      const isEditing = selectedUser !== null;
+
+      const url = isEditing ? `/api/users/${selectedUser.id}` : "/api/users";
+
+      const method = isEditing ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name,
           email,
+          active: true,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create user.");
+        throw new Error("Unable to save user.");
       }
 
       setName("");
       setEmail("");
 
-      await onUserCreated();
+      onCancelEdit();
+
+      await onUserSaved();
+    } catch (error) {
+      console.error(error);
+      alert("Unable to save user.");
     } finally {
       setLoading(false);
     }
@@ -45,48 +72,54 @@ export default function UserForm({
     <form
       className="mb-8 rounded-lg border border-gray-700 bg-gray-900 p-6"
       onSubmit={async (event) => {
-        event.preventDefault();
+        event.preventDefault(); // Stops page reload
         await createUser();
       }}
     >
       <h2 className="mb-6 text-xl font-semibold">
-        Create User
+        {selectedUser ? "Update User" : "Create User"}
       </h2>
 
       <div className="mb-4">
-        <label className="mb-2 block">
-          Name
-        </label>
+        <label className="mb-2 block">Name</label>
 
         <input
           className="w-full rounded border border-gray-600 bg-gray-800 p-2"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="John Doe"
         />
       </div>
 
       <div className="mb-6">
-        <label className="mb-2 block">
-          Email
-        </label>
+        <label className="mb-2 block">Email</label>
 
         <input
           type="email"
           className="w-full rounded border border-gray-600 bg-gray-800 p-2"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="john@example.com"
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-      >
-        {loading ? "Creating..." : "Create User"}
-      </button>
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={loading}
+          className="rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loading ? "Saving..." : selectedUser ? "Update User" : "Create User"}
+        </button>
+
+        {selectedUser && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="rounded bg-gray-600 px-5 py-2 text-white hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }
