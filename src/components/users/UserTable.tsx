@@ -1,8 +1,10 @@
 import type { User } from "@/types/user";
 
+import Button from "@/components/ui/Button";
+
 interface UserTableProps {
   users: User[];
-  onDelete: (id: number) => Promise<void>;
+  onDelete: (user: User) => void;
   onEdit: (user: User) => void;
 }
 
@@ -16,7 +18,7 @@ export default function UserTable({ users, onDelete, onEdit }: UserTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto mt-8">
+    <div className="mt-8 overflow-x-auto">
       <table className="min-w-full border border-gray-700 rounded-lg">
         <thead className="bg-gray-800">
           <tr>
@@ -45,7 +47,7 @@ export default function UserTable({ users, onDelete, onEdit }: UserTableProps) {
 
               <td className="border border-gray-700 px-4 py-3">{user.name}</td>
 
-              <td className="border border-gray-700 px-4 py-3 max-w-xs truncate">
+              <td className="max-w-xs truncate border border-gray-700 px-4 py-3">
                 {user.email}
               </td>
 
@@ -55,19 +57,13 @@ export default function UserTable({ users, onDelete, onEdit }: UserTableProps) {
 
               <td className="border border-gray-700 px-4 py-3">
                 <div className="flex justify-center gap-2">
-                  <button
-                    onClick={() => onEdit(user)}
-                    className="rounded bg-yellow-500 px-3 py-1 text-sm text-white hover:bg-yellow-600"
-                  >
+                  <Button variant="warning" onClick={() => onEdit(user)}>
                     Edit
-                  </button>
+                  </Button>
 
-                  <button
-                    onClick={() => onDelete(user.id)}
-                    className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-                  >
+                  <Button variant="danger" onClick={() => onDelete(user)}>
                     Delete
-                  </button>
+                  </Button>
                 </div>
               </td>
             </tr>
