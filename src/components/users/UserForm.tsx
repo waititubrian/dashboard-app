@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import type { User } from "@/types/user";
 
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
+
 interface UserFormProps {
   selectedUser: User | null;
   onUserSaved: () => Promise<void>;
@@ -28,7 +32,7 @@ export default function UserForm({
     }
   }, [selectedUser]);
 
-  async function createUser() {
+  async function saveUser() {
     setLoading(true);
 
     try {
@@ -69,57 +73,44 @@ export default function UserForm({
   }
 
   return (
-    <form
-      className="mb-8 rounded-lg border border-gray-700 bg-gray-900 p-6"
-      onSubmit={async (event) => {
-        event.preventDefault(); // Stops page reload
-        await createUser();
-      }}
-    >
+    <Card className="mb-8">
       <h2 className="mb-6 text-xl font-semibold">
         {selectedUser ? "Update User" : "Create User"}
       </h2>
 
-      <div className="mb-4">
-        <label className="mb-2 block">Name</label>
-
-        <input
-          className="w-full rounded border border-gray-600 bg-gray-800 p-2"
+      <form
+        onSubmit={async (event) => {
+          event.preventDefault(); // Stops page reload
+          await saveUser();
+        }}
+      >
+        <Input
+          label="Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          placeholder="Brian Waititu"
+          onChange={setName}
         />
-      </div>
 
-      <div className="mb-6">
-        <label className="mb-2 block">Email</label>
-
-        <input
+        <Input
+          label="Email"
           type="email"
-          className="w-full rounded border border-gray-600 bg-gray-800 p-2"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="brian@example.com"
+          onChange={setEmail}
         />
-      </div>
 
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? "Saving..." : selectedUser ? "Update User" : "Create User"}
-        </button>
+        <div className="flex gap-3">
+          <Button type="submit" loading={loading}>
+            {selectedUser ? "Update User" : "Create User"}
+          </Button>
 
-        {selectedUser && (
-          <button
-            type="button"
-            onClick={onCancelEdit}
-            className="rounded bg-gray-600 px-5 py-2 text-white hover:bg-gray-700"
-          >
-            Cancel
-          </button>
-        )}
-      </div>
-    </form>
+          {selectedUser && (
+            <Button type="button" variant="secondary" onClick={onCancelEdit}>
+              Cancel
+            </Button>
+          )}
+        </div>
+      </form>
+    </Card>
   );
 }
