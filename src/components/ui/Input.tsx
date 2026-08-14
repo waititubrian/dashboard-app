@@ -3,6 +3,7 @@ interface InputProps {
   value: string;
   placeholder?: string;
   type?: string;
+  required?: boolean;
   onChange: (value: string) => void;
 }
 
@@ -11,6 +12,7 @@ export default function Input({
   value,
   placeholder,
   type = "text",
+  required = false,
   onChange,
 }: InputProps) {
   return (
@@ -21,14 +23,15 @@ export default function Input({
         type={type}
         value={value}
         placeholder={placeholder}
+        required={required}
         onChange={(e) => onChange(e.target.value)}
         className="
-            w-full
-            rounded
-            border
-            border-gray-600
-            bg-gray-800
-            p-2
+          w-full
+          rounded
+          border
+          border-gray-600
+          bg-gray-800
+          p-2
         "
       />
     </div>

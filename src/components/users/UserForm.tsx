@@ -6,10 +6,11 @@ import type { User } from "@/types/user";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
+import Notification from "../ui/Notification";
 
 interface UserFormProps {
   selectedUser: User | null;
-  onUserSaved: () => Promise<void>;
+  onUserSaved: (message: string) => void;
   onCancelEdit: () => void;
 }
 
@@ -21,6 +22,7 @@ export default function UserForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (selectedUser) {
@@ -33,6 +35,26 @@ export default function UserForm({
   }, [selectedUser]);
 
   async function saveUser() {
+    setError("");
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName) {
+      setError("Name is required.");
+      return;
+    }
+
+    if (!trimmedEmail) {
+      setError("Email is required.");
+      return;
+    }
+
+    if (!trimmedEmail.includes("@")) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -48,25 +70,33 @@ export default function UserForm({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name,
-          email,
+          name: trimmedName,
+          email: trimmedEmail,
           active: true,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Unable to save user.");
+        const data = await response.json();
+
+        throw new Error(data.error || "Unable to save user.");
       }
 
       setName("");
       setEmail("");
+      setError("");
 
       onCancelEdit();
 
-      await onUserSaved();
+      onUserSaved(
+        selectedUser
+          ? "User updated successfully."
+          : "User created successfully.",
+      );
     } catch (error) {
       console.error(error);
-      alert("Unable to save user.");
+
+      setError(error instanceof Error ? error.message : "Unable to save user.");
     } finally {
       setLoading(false);
     }
@@ -78,6 +108,14 @@ export default function UserForm({
         {selectedUser ? "Update User" : "Create User"}
       </h2>
 
+      {error && (
+        <Notification
+          type="error"
+          message={error}
+          onClose={() => setError("")}
+        />
+      )}
+
       <form
         onSubmit={async (event) => {
           event.preventDefault(); // Stops page reload
@@ -88,6 +126,7 @@ export default function UserForm({
           label="Name"
           value={name}
           placeholder="Brian Waititu"
+          required
           onChange={setName}
         />
 
@@ -96,6 +135,7 @@ export default function UserForm({
           type="email"
           value={email}
           placeholder="brian@example.com"
+          required
           onChange={setEmail}
         />
 
