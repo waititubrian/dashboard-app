@@ -14,29 +14,32 @@ model User {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  orders    Order[]
+  orders Order[]
 }
 
 model Product {
-  id        Int      @id @default(autoincrement())
-  name      String
-  price     Decimal  @db.Decimal(10, 2)
-  stock     Int
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Decimal
+  stock       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  orders    Order[]
+  orders Order[]
 }
 
 model Order {
-  id        Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   userId    Int
   productId Int
 
-  quantity  Int
+  quantity Int
 
   createdAt DateTime @default(now())
 
-  user       User    @relation(fields: [userId], references: [id])
-  product    Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 }
