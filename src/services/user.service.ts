@@ -1,6 +1,6 @@
 import * as repository from "@/repositories/user.repository";
 
-export async function createUser(name: string, email: string) {
+function validateUserData(name: string, email: string) {
   if (!name.trim()) {
     throw new Error("Name is required.");
   }
@@ -8,8 +8,12 @@ export async function createUser(name: string, email: string) {
   if (!email.trim()) {
     throw new Error("Email is required.");
   }
+}
 
-  return repository.createUser(name, email);
+export async function createUser(name: string, email: string) {
+  validateUserData(name, email);
+
+  return repository.createUser(name.trim(), email.trim());
 }
 
 export async function getUsers() {
@@ -24,15 +28,9 @@ export async function updateUser(
   id: number,
   name: string,
   email: string,
-  active: boolean
+  active: boolean,
 ) {
-  if (!name.trim()) {
-    throw new Error("Name is required.");
-  }
-
-  if (!email.trim()) {
-    throw new Error("Email is required.");
-  }
+  validateUserData(name, email);
 
   return repository.updateUser(id, name, email, active);
 }
