@@ -34,7 +34,7 @@ function parseId(id: string) {
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -44,7 +44,7 @@ export async function GET(
     if (!productId) {
       return NextResponse.json(
         { error: "Invalid product ID." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -53,26 +53,24 @@ export async function GET(
     if (!product) {
       return NextResponse.json(
         { error: "Product not found." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    return NextResponse.json(
-      serializeProduct(product)
-    );
+    return NextResponse.json(serializeProduct(product));
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
       { error: "Failed to fetch product." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -82,51 +80,42 @@ export async function PUT(
     if (!productId) {
       return NextResponse.json(
         { error: "Invalid product ID." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const existingProduct =
-      await getProductById(productId);
+    const existingProduct = await getProductById(productId);
 
     if (!existingProduct) {
       return NextResponse.json(
         { error: "Product not found." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const body = await request.json();
 
-    const name =
-      typeof body.name === "string"
-        ? body.name
-        : "";
+    const name = typeof body.name === "string" ? body.name : "";
 
     const description =
-      typeof body.description === "string"
-        ? body.description
-        : null;
+      typeof body.description === "string" ? body.description : null;
 
     const price = Number(body.price);
     const stock = Number(body.stock);
 
-    const active =
-      typeof body.active === "boolean"
-        ? body.active
-        : true;
+    const active = typeof body.active === "boolean" ? body.active : true;
 
     if (!Number.isFinite(price)) {
       return NextResponse.json(
         { error: "Price must be a valid number." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!Number.isInteger(stock)) {
       return NextResponse.json(
         { error: "Stock must be a whole number." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -136,32 +125,28 @@ export async function PUT(
       description,
       price,
       stock,
-      active
+      active,
     );
 
-    return NextResponse.json(
-      serializeProduct(product)
-    );
+    return NextResponse.json(serializeProduct(product));
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Failed to update product.",
+          error instanceof Error ? error.message : "Failed to update product.",
       },
       {
         status: 400,
-      }
+      },
     );
   }
 }
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -171,17 +156,16 @@ export async function DELETE(
     if (!productId) {
       return NextResponse.json(
         { error: "Invalid product ID." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const existingProduct =
-      await getProductById(productId);
+    const existingProduct = await getProductById(productId);
 
     if (!existingProduct) {
       return NextResponse.json(
         { error: "Product not found." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -199,7 +183,7 @@ export async function DELETE(
       },
       {
         status: 500,
-      }
+      },
     );
   }
 }
