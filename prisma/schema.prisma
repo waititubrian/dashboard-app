@@ -30,16 +30,23 @@ model Product {
   orders Order[]
 }
 
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
 model Order {
-  id Int @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  quantity   Int
+  unitPrice  Decimal
+  status     OrderStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
-  userId    Int
-  productId Int
-
-  quantity Int
-
-  createdAt DateTime @default(now())
-
-  user    User    @relation(fields: [userId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+  product    Product     @relation(fields: [productId], references: [id])
 }
