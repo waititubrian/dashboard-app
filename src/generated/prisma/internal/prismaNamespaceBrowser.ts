@@ -102,7 +102,10 @@ export const OrderScalarFieldEnum = {
   userId: 'userId',
   productId: 'productId',
   quantity: 'quantity',
-  createdAt: 'createdAt'
+  unitPrice: 'unitPrice',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
