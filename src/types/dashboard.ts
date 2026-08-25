@@ -1,12 +1,22 @@
 export interface DashboardStats {
-  users: number;
-  activeUsers: number;
-  orders: number;
-  revenue: number;
-  products: number;
+  totalUsers: number;
+  totalProducts: number;
+  totalOrders: number;
+  totalRevenue: number;
 }
 
-export interface DashboardResponse {
-  success: boolean;
-  data: DashboardStats;
+export interface RecentOrder {
+  id: number;
+  customerName: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface DashboardData {
+  stats: DashboardStats;
+  recentOrders: RecentOrder[];
 }

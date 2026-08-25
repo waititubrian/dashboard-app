@@ -25,7 +25,7 @@ export async function createOrder(
   userId: number,
   productId: number,
   quantity: number,
-  status: OrderStatus
+  status: OrderStatus,
 ) {
   validateQuantity(quantity);
   validateStatus(status);
@@ -52,7 +52,7 @@ export async function createOrder(
 
   if (product.stock < quantity) {
     throw new Error(
-      `Insufficient stock. Only ${product.stock} item(s) available.`
+      `Insufficient stock. Only ${product.stock} item(s) available.`,
     );
   }
 
@@ -107,7 +107,7 @@ export async function updateOrder(
   userId: number,
   productId: number,
   quantity: number,
-  status: OrderStatus
+  status: OrderStatus,
 ) {
   validateQuantity(quantity);
   validateStatus(status);
@@ -144,13 +144,11 @@ export async function updateOrder(
    */
   const availableStock =
     product.stock +
-    (existingOrder.productId === productId
-      ? existingOrder.quantity
-      : 0);
+    (existingOrder.productId === productId ? existingOrder.quantity : 0);
 
   if (availableStock < quantity) {
     throw new Error(
-      `Insufficient stock. Only ${availableStock} item(s) available.`
+      `Insufficient stock. Only ${availableStock} item(s) available.`,
     );
   }
 
@@ -158,8 +156,7 @@ export async function updateOrder(
 
   return prisma.$transaction(async (tx) => {
     if (existingOrder.productId === productId) {
-      const quantityDifference =
-        quantity - existingOrder.quantity;
+      const quantityDifference = quantity - existingOrder.quantity;
 
       await tx.product.update({
         where: {
