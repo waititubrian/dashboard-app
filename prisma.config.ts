@@ -9,6 +9,9 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Migrations run once per deploy, so prefer a direct (unpooled) connection
+    // when available (e.g. Neon/Supabase pooler setups) and fall back to
+    // DATABASE_URL for local development where there's no pooler.
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
   },
 });
