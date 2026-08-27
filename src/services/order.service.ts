@@ -9,6 +9,12 @@ const VALID_STATUSES: OrderStatus[] = [
   "REFUNDED",
 ];
 
+const TERMINAL_STATUSES: OrderStatus[] = ["CANCELLED", "REFUNDED"];
+
+function holdsStock(status: OrderStatus) {
+  return !TERMINAL_STATUSES.includes(status);
+}
+
 function validateQuantity(quantity: number) {
   if (!Number.isInteger(quantity) || quantity <= 0) {
     throw new Error("Quantity must be a positive whole number.");
@@ -73,16 +79,20 @@ export async function createOrder(
       },
     });
 
-    await tx.product.update({
-      where: {
-        id: productId,
-      },
-      data: {
-        stock: {
-          decrement: quantity,
+    // Only reserve stock for orders that aren't already
+    // cancelled/refunded at creation time.
+    if (holdsStock(status)) {
+      await tx.product.update({
+        where: {
+          id: productId,
         },
-      },
-    });
+        data: {
+          stock: {
+            decrement: quantity,
+          },
+        },
+      });
+    }
 
     return order;
   });
@@ -139,14 +149,22 @@ export async function updateOrder(
   }
 
   /*
-   * Return the old quantity to stock first,
-   * then check whether the new quantity is available.
+   * Stock is only "reserved" while an order is in a non-terminal
+   * (not cancelled/refunded) status. Only add the order's current
+   * reservation back into the availability count if it's actually
+   * held right now, and only enforce availability if the update
+   * would keep (or newly create) a reservation.
    */
+  const wasHeld = holdsStock(existingOrder.status);
+  const willBeHeld = holdsStock(status);
+
   const availableStock =
     product.stock +
-    (existingOrder.productId === productId ? existingOrder.quantity : 0);
+    (wasHeld && existingOrder.productId === productId
+      ? existingOrder.quantity
+      : 0);
 
-  if (availableStock < quantity) {
+  if (willBeHeld && availableStock < quantity) {
     throw new Error(
       `Insufficient stock. Only ${availableStock} item(s) available.`,
     );
@@ -155,20 +173,9 @@ export async function updateOrder(
   const unitPrice = Number(product.price);
 
   return prisma.$transaction(async (tx) => {
-    if (existingOrder.productId === productId) {
-      const quantityDifference = quantity - existingOrder.quantity;
-
-      await tx.product.update({
-        where: {
-          id: productId,
-        },
-        data: {
-          stock: {
-            decrement: quantityDifference,
-          },
-        },
-      });
-    } else {
+    if (wasHeld && !willBeHeld) {
+      // Status is moving to cancelled/refunded: release the stock
+      // that was reserved for this order.
       await tx.product.update({
         where: {
           id: existingOrder.productId,
@@ -179,7 +186,9 @@ export async function updateOrder(
           },
         },
       });
-
+    } else if (!wasHeld && willBeHeld) {
+      // Status is moving out of cancelled/refunded: nothing is
+      // currently reserved for this order, so reserve fresh.
       await tx.product.update({
         where: {
           id: productId,
@@ -190,7 +199,45 @@ export async function updateOrder(
           },
         },
       });
+    } else if (wasHeld && willBeHeld) {
+      if (existingOrder.productId === productId) {
+        const quantityDifference = quantity - existingOrder.quantity;
+
+        await tx.product.update({
+          where: {
+            id: productId,
+          },
+          data: {
+            stock: {
+              decrement: quantityDifference,
+            },
+          },
+        });
+      } else {
+        await tx.product.update({
+          where: {
+            id: existingOrder.productId,
+          },
+          data: {
+            stock: {
+              increment: existingOrder.quantity,
+            },
+          },
+        });
+
+        await tx.product.update({
+          where: {
+            id: productId,
+          },
+          data: {
+            stock: {
+              decrement: quantity,
+            },
+          },
+        });
+      }
     }
+    // else (!wasHeld && !willBeHeld): no stock movement at all.
 
     return tx.order.update({
       where: {
