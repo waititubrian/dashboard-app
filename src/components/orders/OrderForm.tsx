@@ -35,31 +35,40 @@ export default function OrderForm({
   const [userId, setUserId] = useState("");
   const [productId, setProductId] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [status, setStatus] =
-    useState<OrderStatus>("PENDING");
+  const [status, setStatus] = useState<OrderStatus>("PENDING");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  /*
+   * Reset the form to its initial state.
+   */
+  function resetForm() {
+    setUserId("");
+    setProductId("");
+    setQuantity("");
+    setStatus("PENDING");
+    setError("");
+  }
+
+  /*
+   * Populate the form when editing an existing order.
+   * Clear the form when creating a new order.
+   */
   useEffect(() => {
     if (selectedOrder) {
       setUserId(String(selectedOrder.userId));
       setProductId(String(selectedOrder.productId));
       setQuantity(String(selectedOrder.quantity));
       setStatus(selectedOrder.status);
+      setError("");
     } else {
-      setUserId("");
-      setProductId("");
-      setQuantity("");
-      setStatus("PENDING");
+      resetForm();
     }
-
-    setError("");
   }, [selectedOrder]);
 
   const selectedProduct = products.find(
-    (product) =>
-      product.id === Number(productId)
+    (product) => product.id === Number(productId),
   );
 
   async function saveOrder() {
@@ -79,13 +88,8 @@ export default function OrderForm({
       return;
     }
 
-    if (
-      !Number.isInteger(numericQuantity) ||
-      numericQuantity <= 0
-    ) {
-      setError(
-        "Quantity must be a positive whole number."
-      );
+    if (!Number.isInteger(numericQuantity) || numericQuantity <= 0) {
+      setError("Quantity must be a positive whole number.");
       return;
     }
 
@@ -95,9 +99,7 @@ export default function OrderForm({
       const isEditing = selectedOrder !== null;
 
       const response = await fetch(
-        isEditing
-          ? `/api/orders/${selectedOrder.id}`
-          : "/api/orders",
+        isEditing ? `/api/orders/${selectedOrder.id}` : "/api/orders",
         {
           method: isEditing ? "PUT" : "POST",
           headers: {
@@ -109,31 +111,42 @@ export default function OrderForm({
             quantity: numericQuantity,
             status,
           }),
-        }
+        },
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || "Unable to save order."
-        );
+        throw new Error(data.error || "Unable to save order.");
       }
 
-      onCancelEdit();
+      /*
+       * IMPORTANT:
+       * Reset the form after a successful save.
+       */
+      resetForm();
 
+      /*
+       * If we were editing, close the edit mode.
+       */
+      if (isEditing) {
+        onCancelEdit();
+      }
+
+      /*
+       * Tell the parent component to reload
+       * the orders and show the success notification.
+       */
       onOrderSaved(
         isEditing
           ? "Order updated successfully."
-          : "Order created successfully."
+          : "Order created successfully.",
       );
     } catch (error) {
       console.error(error);
 
       setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to save order."
+        error instanceof Error ? error.message : "Unable to save order.",
       );
     } finally {
       setLoading(false);
@@ -143,9 +156,7 @@ export default function OrderForm({
   return (
     <Card className="mb-8">
       <h2 className="mb-6 text-xl font-semibold">
-        {selectedOrder
-          ? "Update Order"
-          : "Create Order"}
+        {selectedOrder ? "Update Order" : "Create Order"}
       </h2>
 
       {error && (
@@ -157,137 +168,102 @@ export default function OrderForm({
       )}
 
       <div className="grid gap-5">
+        {/* Customer */}
 
         <div>
-          <label className="mb-2 block text-sm font-medium">
-            Customer
-          </label>
+          <label className="mb-2 block text-sm font-medium">Customer</label>
 
           <select
             value={userId}
-            onChange={(event) =>
-              setUserId(event.target.value)
-            }
+            onChange={(event) => setUserId(event.target.value)}
             className="w-full rounded border border-gray-600 bg-gray-900 p-3"
           >
-            <option value="">
-              Select customer
-            </option>
+            <option value="">Select customer</option>
 
             {users.map((user) => (
-              <option
-                key={user.id}
-                value={user.id}
-              >
+              <option key={user.id} value={user.id}>
                 {user.name} — {user.email}
               </option>
             ))}
           </select>
         </div>
 
+        {/* Product */}
+
         <div>
-          <label className="mb-2 block text-sm font-medium">
-            Product
-          </label>
+          <label className="mb-2 block text-sm font-medium">Product</label>
 
           <select
             value={productId}
-            onChange={(event) =>
-              setProductId(event.target.value)
-            }
+            onChange={(event) => setProductId(event.target.value)}
             className="w-full rounded border border-gray-600 bg-gray-900 p-3"
           >
-            <option value="">
-              Select product
-            </option>
+            <option value="">Select product</option>
 
             {products
               .filter((product) => product.active)
               .map((product) => (
-                <option
-                  key={product.id}
-                  value={product.id}
-                >
-                  {product.name} — KSh{" "}
-                  {Number(
-                    product.price
-                  ).toLocaleString()}
+                <option key={product.id} value={product.id}>
+                  {product.name} — KSh {Number(product.price).toLocaleString()}
                 </option>
               ))}
           </select>
         </div>
+
+        {/* Selected product information */}
 
         {selectedProduct && (
           <div className="rounded bg-gray-900 p-4 text-sm">
             <p>
               Current Price:{" "}
               <strong>
-                KSh{" "}
-                {Number(
-                  selectedProduct.price
-                ).toLocaleString()}
+                KSh {Number(selectedProduct.price).toLocaleString()}
               </strong>
             </p>
 
             <p>
-              Available Stock:{" "}
-              <strong>
-                {selectedProduct.stock}
-              </strong>
+              Available Stock: <strong>{selectedProduct.stock}</strong>
             </p>
           </div>
         )}
 
+        {/* Quantity */}
+
         <div>
-          <label className="mb-2 block text-sm font-medium">
-            Quantity
-          </label>
+          <label className="mb-2 block text-sm font-medium">Quantity</label>
 
           <input
             type="number"
             min="1"
             value={quantity}
-            onChange={(event) =>
-              setQuantity(event.target.value)
-            }
+            onChange={(event) => setQuantity(event.target.value)}
             className="w-full rounded border border-gray-600 bg-gray-900 p-3"
           />
         </div>
 
+        {/* Status */}
+
         <div>
-          <label className="mb-2 block text-sm font-medium">
-            Status
-          </label>
+          <label className="mb-2 block text-sm font-medium">Status</label>
 
           <select
             value={status}
-            onChange={(event) =>
-              setStatus(
-                event.target.value as OrderStatus
-              )
-            }
+            onChange={(event) => setStatus(event.target.value as OrderStatus)}
             className="w-full rounded border border-gray-600 bg-gray-900 p-3"
           >
             {statuses.map((orderStatus) => (
-              <option
-                key={orderStatus}
-                value={orderStatus}
-              >
+              <option key={orderStatus} value={orderStatus}>
                 {orderStatus}
               </option>
             ))}
           </select>
         </div>
 
+        {/* Buttons */}
+
         <div className="flex gap-3">
-          <Button
-            type="button"
-            loading={loading}
-            onClick={saveOrder}
-          >
-            {selectedOrder
-              ? "Update Order"
-              : "Create Order"}
+          <Button type="button" loading={loading} onClick={saveOrder}>
+            {selectedOrder ? "Update Order" : "Create Order"}
           </Button>
 
           {selectedOrder && (
@@ -295,7 +271,10 @@ export default function OrderForm({
               type="button"
               variant="secondary"
               disabled={loading}
-              onClick={onCancelEdit}
+              onClick={() => {
+                resetForm();
+                onCancelEdit();
+              }}
             >
               Cancel
             </Button>
