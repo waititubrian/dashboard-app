@@ -1,4 +1,4 @@
-import Card from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface RevenueStatsProps {
   totalRevenue: number;
@@ -14,30 +14,36 @@ export default function RevenueStats({
   return (
     <div className="mb-8 grid gap-6 md:grid-cols-3">
       <Card>
-        <p className="text-sm text-gray-400">Total Revenue</p>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Total Revenue</p>
 
-        <h2 className="mt-2 text-3xl font-bold">
-          KSh {totalRevenue.toLocaleString()}
-        </h2>
+          <h2 className="mt-2 text-3xl font-bold">
+            KSh {totalRevenue.toLocaleString()}
+          </h2>
+        </CardContent>
       </Card>
 
       <Card>
-        <p className="text-sm text-gray-400">Completed Orders</p>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Completed Orders</p>
 
-        <h2 className="mt-2 text-3xl font-bold">
-          {totalOrders.toLocaleString()}
-        </h2>
+          <h2 className="mt-2 text-3xl font-bold">
+            {totalOrders.toLocaleString()}
+          </h2>
+        </CardContent>
       </Card>
 
       <Card>
-        <p className="text-sm text-gray-400">Average Order Value</p>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Average Order Value</p>
 
-        <h2 className="mt-2 text-3xl font-bold">
-          KSh{" "}
-          {averageOrderValue.toLocaleString(undefined, {
-            maximumFractionDigits: 2,
-          })}
-        </h2>
+          <h2 className="mt-2 text-3xl font-bold">
+            KSh{" "}
+            {averageOrderValue.toLocaleString(undefined, {
+              maximumFractionDigits: 2,
+            })}
+          </h2>
+        </CardContent>
       </Card>
     </div>
   );

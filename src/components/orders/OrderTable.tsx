@@ -1,12 +1,31 @@
-import type { Order } from "@/types/order";
+import type { Order, OrderStatus } from "@/types/order";
 
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 
 interface OrderTableProps {
   orders: Order[];
   onEdit: (order: Order) => void;
   onDelete: (order: Order) => void;
 }
+
+const statusBadgeVariant: Record<
+  OrderStatus,
+  "default" | "outline" | "destructive" | "secondary"
+> = {
+  PENDING: "outline",
+  COMPLETED: "default",
+  CANCELLED: "destructive",
+  REFUNDED: "secondary",
+};
 
 export default function OrderTable({
   orders,
@@ -15,123 +34,82 @@ export default function OrderTable({
 }: OrderTableProps) {
   if (orders.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-700 p-8 text-center text-gray-400">
+      <div className="rounded-lg border border-border p-8 text-center text-muted-foreground">
         No orders found.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border border-gray-700">
-        <thead className="bg-gray-800">
-          <tr>
-            <th className="border border-gray-700 px-4 py-3">
-              ID
-            </th>
+    <div className="rounded-lg border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-center">ID</TableHead>
+            <TableHead>Customer</TableHead>
+            <TableHead>Product</TableHead>
+            <TableHead className="text-center">Quantity</TableHead>
+            <TableHead className="text-right">Unit Price</TableHead>
+            <TableHead className="text-right">Total</TableHead>
+            <TableHead className="text-center">Status</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
 
-            <th className="border border-gray-700 px-4 py-3 text-left">
-              Customer
-            </th>
-
-            <th className="border border-gray-700 px-4 py-3 text-left">
-              Product
-            </th>
-
-            <th className="border border-gray-700 px-4 py-3">
-              Quantity
-            </th>
-
-            <th className="border border-gray-700 px-4 py-3">
-              Unit Price
-            </th>
-
-            <th className="border border-gray-700 px-4 py-3">
-              Total
-            </th>
-
-            <th className="border border-gray-700 px-4 py-3">
-              Status
-            </th>
-
-            <th className="border border-gray-700 px-4 py-3">
-              Actions
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
+        <TableBody>
           {orders.map((order) => {
-            const total =
-              Number(order.unitPrice) *
-              order.quantity;
+            const total = Number(order.unitPrice) * order.quantity;
 
             return (
-              <tr key={order.id}>
-                <td className="border border-gray-700 px-4 py-3 text-center">
-                  {order.id}
-                </td>
+              <TableRow key={order.id}>
+                <TableCell className="text-center">{order.id}</TableCell>
 
-                <td className="border border-gray-700 px-4 py-3">
-                  <div className="font-medium">
-                    {order.user.name}
-                  </div>
-
-                  <div className="text-sm text-gray-400">
+                <TableCell>
+                  <div className="font-medium">{order.user.name}</div>
+                  <div className="text-sm text-muted-foreground">
                     {order.user.email}
                   </div>
-                </td>
+                </TableCell>
 
-                <td className="border border-gray-700 px-4 py-3">
-                  {order.product.name}
-                </td>
+                <TableCell>{order.product.name}</TableCell>
 
-                <td className="border border-gray-700 px-4 py-3 text-center">
+                <TableCell className="text-center">
                   {order.quantity}
-                </td>
+                </TableCell>
 
-                <td className="border border-gray-700 px-4 py-3 text-right">
-                  KSh{" "}
-                  {Number(
-                    order.unitPrice
-                  ).toLocaleString()}
-                </td>
+                <TableCell className="text-right">
+                  KSh {Number(order.unitPrice).toLocaleString()}
+                </TableCell>
 
-                <td className="border border-gray-700 px-4 py-3 text-right font-semibold">
-                  KSh{" "}
-                  {total.toLocaleString()}
-                </td>
+                <TableCell className="text-right font-semibold">
+                  KSh {total.toLocaleString()}
+                </TableCell>
 
-                <td className="border border-gray-700 px-4 py-3 text-center">
-                  {order.status}
-                </td>
+                <TableCell className="text-center">
+                  <Badge variant={statusBadgeVariant[order.status]}>
+                    {order.status}
+                  </Badge>
+                </TableCell>
 
-                <td className="border border-gray-700 px-4 py-3">
+                <TableCell>
                   <div className="flex justify-center gap-2">
-                    <Button
-                      variant="warning"
-                      onClick={() =>
-                        onEdit(order)
-                      }
-                    >
+                    <Button variant="warning" onClick={() => onEdit(order)}>
                       Edit
                     </Button>
 
                     <Button
-                      variant="danger"
-                      onClick={() =>
-                        onDelete(order)
-                      }
+                      variant="destructive"
+                      onClick={() => onDelete(order)}
                     >
                       Delete
                     </Button>
                   </div>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

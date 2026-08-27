@@ -5,6 +5,7 @@ import {
   updateProduct,
   deleteProduct,
 } from "@/services/product.service";
+import { parseId } from "@/utils/api";
 
 function serializeProduct(product: {
   id: number;
@@ -20,16 +21,6 @@ function serializeProduct(product: {
     ...product,
     price: product.price.toString(),
   };
-}
-
-function parseId(id: string) {
-  const parsedId = Number(id);
-
-  if (!Number.isInteger(parsedId) || parsedId <= 0) {
-    return null;
-  }
-
-  return parsedId;
 }
 
 export async function GET(
