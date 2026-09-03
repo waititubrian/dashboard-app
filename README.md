@@ -11,12 +11,17 @@ PostgreSQL.
   order is cancelled or refunded).
 - **Revenue** — totals, average order value, and a breakdown by product,
   computed from completed orders.
-- Shared navigation across all pages (no more landing on a 404 at `/` —
-  it redirects to `/dashboard`), and a light/dark theme toggle.
-- UI built on [shadcn/ui](https://ui.shadcn.com); see
-  [UI and functional improvements](#ui-and-functional-improvements) below.
+- Shared navigation across all pages, and a light/dark theme toggle.
 
-## Getting started (local development)
+## Tech stack
+
+- [Next.js](https://nextjs.org) (App Router) + TypeScript
+- [Prisma](https://www.prisma.io) over PostgreSQL
+- [Tailwind CSS](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com)
+- [Vercel](https://vercel.com) for hosting, [Neon](https://neon.tech) for
+  managed Postgres in production
+
+## Getting started
 
 Local development uses PostgreSQL via Docker Compose, not the production
 database.
@@ -29,25 +34,16 @@ npm run db:migrate:dev    # apply migrations locally
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-## Deployment
+## Available scripts
 
-The app deploys to Vercel with a managed Postgres database (Neon) in
-production. See [docs/deployment.md](./docs/deployment.md) for the full
-architecture, the `feature/*` → `main` → `prod` git workflow, environment
-variables, migrations, custom domains, and rollback steps.
-
-## UI and functional improvements
-
-The UI is built on [shadcn/ui](https://ui.shadcn.com). See
-[docs/ui-and-functional-improvements.md](./docs/ui-and-functional-improvements.md)
-for what was migrated and why, plus a set of functional bug fixes (order
-stock accounting, user API error handling) made in the same pass.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command                    | Description                              |
+| --------------------------- | ----------------------------------------- |
+| `npm run dev`               | Start the local dev server               |
+| `npm run build`              | Run pending migrations and build for production |
+| `npm run start`              | Start the production server              |
+| `npm run lint`               | Lint the codebase                        |
+| `npm run db:migrate:dev`     | Create/apply a migration locally         |
+| `npm run db:migrate:deploy`  | Apply pending migrations (used in CI/production) |
+| `npm run db:studio`          | Open Prisma Studio                       |
