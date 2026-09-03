@@ -35,7 +35,7 @@ export default function ProductTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
+            <TableHead></TableHead>
             <TableHead>Product</TableHead>
             <TableHead>Description</TableHead>
             <TableHead className="text-right">Price</TableHead>
@@ -46,9 +46,9 @@ export default function ProductTable({
         </TableHeader>
 
         <TableBody>
-          {products.map((product) => (
+          {products.map((product, index) => (
             <TableRow key={product.id}>
-              <TableCell>{product.id}</TableCell>
+              <TableCell>{index + 1}</TableCell>
               <TableCell className="font-medium">{product.name}</TableCell>
 
               <TableCell className="max-w-xs truncate">

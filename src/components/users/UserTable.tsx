@@ -31,7 +31,7 @@ export default function UserTable({ users, onDelete, onEdit }: UserTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
+            <TableHead></TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead className="text-center">Active</TableHead>
@@ -40,9 +40,9 @@ export default function UserTable({ users, onDelete, onEdit }: UserTableProps) {
         </TableHeader>
 
         <TableBody>
-          {users.map((user) => (
+          {users.map((user, index) => (
             <TableRow key={user.id}>
-              <TableCell>{user.id}</TableCell>
+              <TableCell>{index + 1}</TableCell>
               <TableCell>{user.name}</TableCell>
               <TableCell className="max-w-xs truncate">{user.email}</TableCell>
 
