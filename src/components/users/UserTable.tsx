@@ -1,6 +1,15 @@
 import type { User } from "@/types/user";
 
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 
 interface UserTableProps {
   users: User[];
@@ -11,65 +20,53 @@ interface UserTableProps {
 export default function UserTable({ users, onDelete, onEdit }: UserTableProps) {
   if (users.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-700 p-8 text-center text-gray-400">
+      <div className="rounded-lg border border-border p-8 text-center text-muted-foreground">
         No users found.
       </div>
     );
   }
 
   return (
-    <div className="mt-8 overflow-x-auto">
-      <table className="min-w-full border border-gray-700 rounded-lg">
-        <thead className="bg-gray-800">
-          <tr>
-            <th className="border border-gray-700 px-4 py-3 text-left">ID</th>
+    <div className="mt-8 rounded-lg border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead></TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead className="text-center">Active</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
 
-            <th className="border border-gray-700 px-4 py-3 text-left">Name</th>
+        <TableBody>
+          {users.map((user, index) => (
+            <TableRow key={user.id}>
+              <TableCell>{index + 1}</TableCell>
+              <TableCell>{user.name}</TableCell>
+              <TableCell className="max-w-xs truncate">{user.email}</TableCell>
 
-            <th className="border border-gray-700 px-4 py-3 text-left">
-              Email
-            </th>
+              <TableCell className="text-center">
+                <Badge variant={user.active ? "default" : "outline"}>
+                  {user.active ? "Active" : "Inactive"}
+                </Badge>
+              </TableCell>
 
-            <th className="border border-gray-700 px-4 py-3 text-center">
-              Active
-            </th>
-
-            <th className="border border-gray-700 px-4 py-3 text-center">
-              Actions
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id} className="hover:bg-gray-900">
-              <td className="border border-gray-700 px-4 py-3">{user.id}</td>
-
-              <td className="border border-gray-700 px-4 py-3">{user.name}</td>
-
-              <td className="max-w-xs truncate border border-gray-700 px-4 py-3">
-                {user.email}
-              </td>
-
-              <td className="border border-gray-700 px-4 py-3 text-center">
-                {user.active ? "✅" : "❌"}
-              </td>
-
-              <td className="border border-gray-700 px-4 py-3">
+              <TableCell>
                 <div className="flex justify-center gap-2">
                   <Button variant="warning" onClick={() => onEdit(user)}>
                     Edit
                   </Button>
 
-                  <Button variant="danger" onClick={() => onDelete(user)}>
+                  <Button variant="destructive" onClick={() => onDelete(user)}>
                     Delete
                   </Button>
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

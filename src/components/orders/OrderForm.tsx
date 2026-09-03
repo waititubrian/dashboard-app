@@ -1,14 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import type { Order, OrderStatus } from "@/types/order";
 import type { Product } from "@/types/product";
 import type { User } from "@/types/user";
 
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Notification from "@/components/ui/Notification";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface OrderFormProps {
   selectedOrder: Order | null;
@@ -38,7 +47,6 @@ export default function OrderForm({
   const [status, setStatus] = useState<OrderStatus>("PENDING");
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   /*
    * Reset the form to its initial state.
@@ -48,7 +56,6 @@ export default function OrderForm({
     setProductId("");
     setQuantity("");
     setStatus("PENDING");
-    setError("");
   }
 
   /*
@@ -61,7 +68,6 @@ export default function OrderForm({
       setProductId(String(selectedOrder.productId));
       setQuantity(String(selectedOrder.quantity));
       setStatus(selectedOrder.status);
-      setError("");
     } else {
       resetForm();
     }
@@ -72,24 +78,22 @@ export default function OrderForm({
   );
 
   async function saveOrder() {
-    setError("");
-
     const numericUserId = Number(userId);
     const numericProductId = Number(productId);
     const numericQuantity = Number(quantity);
 
     if (!numericUserId) {
-      setError("Please select a customer.");
+      toast.error("Please select a customer.");
       return;
     }
 
     if (!numericProductId) {
-      setError("Please select a product.");
+      toast.error("Please select a product.");
       return;
     }
 
     if (!Number.isInteger(numericQuantity) || numericQuantity <= 0) {
-      setError("Quantity must be a positive whole number.");
+      toast.error("Quantity must be a positive whole number.");
       return;
     }
 
@@ -135,7 +139,7 @@ export default function OrderForm({
 
       /*
        * Tell the parent component to reload
-       * the orders and show the success notification.
+       * the orders and show the success toast.
        */
       onOrderSaved(
         isEditing
@@ -145,7 +149,7 @@ export default function OrderForm({
     } catch (error) {
       console.error(error);
 
-      setError(
+      toast.error(
         error instanceof Error ? error.message : "Unable to save order.",
       );
     } finally {
@@ -155,132 +159,141 @@ export default function OrderForm({
 
   return (
     <Card className="mb-8">
-      <h2 className="mb-6 text-xl font-semibold">
-        {selectedOrder ? "Update Order" : "Create Order"}
-      </h2>
+      <CardContent>
+        <h2 className="mb-6 text-xl font-semibold">
+          {selectedOrder ? "Update Order" : "Create Order"}
+        </h2>
 
-      {error && (
-        <Notification
-          type="error"
-          message={error}
-          onClose={() => setError("")}
-        />
-      )}
+        <div className="grid gap-5">
+          {/* Customer */}
 
-      <div className="grid gap-5">
-        {/* Customer */}
+          <div>
+            <Label className="mb-2">Customer</Label>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">Customer</label>
-
-          <select
-            value={userId}
-            onChange={(event) => setUserId(event.target.value)}
-            className="w-full rounded border border-gray-600 bg-gray-900 p-3"
-          >
-            <option value="">Select customer</option>
-
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.name} — {user.email}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Product */}
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">Product</label>
-
-          <select
-            value={productId}
-            onChange={(event) => setProductId(event.target.value)}
-            className="w-full rounded border border-gray-600 bg-gray-900 p-3"
-          >
-            <option value="">Select product</option>
-
-            {products
-              .filter((product) => product.active)
-              .map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name} — KSh {Number(product.price).toLocaleString()}
-                </option>
-              ))}
-          </select>
-        </div>
-
-        {/* Selected product information */}
-
-        {selectedProduct && (
-          <div className="rounded bg-gray-900 p-4 text-sm">
-            <p>
-              Current Price:{" "}
-              <strong>
-                KSh {Number(selectedProduct.price).toLocaleString()}
-              </strong>
-            </p>
-
-            <p>
-              Available Stock: <strong>{selectedProduct.stock}</strong>
-            </p>
-          </div>
-        )}
-
-        {/* Quantity */}
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">Quantity</label>
-
-          <input
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={(event) => setQuantity(event.target.value)}
-            className="w-full rounded border border-gray-600 bg-gray-900 p-3"
-          />
-        </div>
-
-        {/* Status */}
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">Status</label>
-
-          <select
-            value={status}
-            onChange={(event) => setStatus(event.target.value as OrderStatus)}
-            className="w-full rounded border border-gray-600 bg-gray-900 p-3"
-          >
-            {statuses.map((orderStatus) => (
-              <option key={orderStatus} value={orderStatus}>
-                {orderStatus}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Buttons */}
-
-        <div className="flex gap-3">
-          <Button type="button" loading={loading} onClick={saveOrder}>
-            {selectedOrder ? "Update Order" : "Create Order"}
-          </Button>
-
-          {selectedOrder && (
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={loading}
-              onClick={() => {
-                resetForm();
-                onCancelEdit();
-              }}
+            <Select
+              value={userId}
+              onValueChange={(value) => setUserId(value ?? "")}
             >
-              Cancel
-            </Button>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select customer" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={String(user.id)}>
+                    {user.name} — {user.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Product */}
+
+          <div>
+            <Label className="mb-2">Product</Label>
+
+            <Select
+              value={productId}
+              onValueChange={(value) => setProductId(value ?? "")}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select product" />
+              </SelectTrigger>
+              <SelectContent>
+                {products
+                  .filter((product) => product.active)
+                  .map((product) => (
+                    <SelectItem key={product.id} value={String(product.id)}>
+                      {product.name} — KSh{" "}
+                      {Number(product.price).toLocaleString()}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Selected product information */}
+
+          {selectedProduct && (
+            <div className="rounded-lg bg-muted p-4 text-sm">
+              <p>
+                Current Price:{" "}
+                <strong>
+                  KSh {Number(selectedProduct.price).toLocaleString()}
+                </strong>
+              </p>
+
+              <p>
+                Available Stock: <strong>{selectedProduct.stock}</strong>
+              </p>
+            </div>
           )}
+
+          {/* Quantity */}
+
+          <div>
+            <Label htmlFor="order-quantity" className="mb-2">
+              Quantity
+            </Label>
+
+            <Input
+              id="order-quantity"
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(event) => setQuantity(event.target.value)}
+            />
+          </div>
+
+          {/* Status */}
+
+          <div>
+            <Label className="mb-2">Status</Label>
+
+            <Select
+              value={status}
+              onValueChange={(value) => setStatus(value as OrderStatus)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {statuses.map((orderStatus) => (
+                  <SelectItem key={orderStatus} value={orderStatus}>
+                    {orderStatus}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Buttons */}
+
+          <div className="flex gap-3">
+            <Button type="button" disabled={loading} onClick={saveOrder}>
+              {loading
+                ? "Saving..."
+                : selectedOrder
+                  ? "Update Order"
+                  : "Create Order"}
+            </Button>
+
+            {selectedOrder && (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={loading}
+                onClick={() => {
+                  resetForm();
+                  onCancelEdit();
+                }}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 }

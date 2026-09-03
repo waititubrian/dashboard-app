@@ -22,6 +22,13 @@ production. See [docs/deployment.md](./docs/deployment.md) for the full
 architecture, the `feature/*` → `main` → `prod` git workflow, environment
 variables, migrations, custom domains, and rollback steps.
 
+## UI and functional improvements
+
+The UI is built on [shadcn/ui](https://ui.shadcn.com). See
+[docs/ui-and-functional-improvements.md](./docs/ui-and-functional-improvements.md)
+for what was migrated and why, plus a set of functional bug fixes (order
+stock accounting, user API error handling) made in the same pass.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
