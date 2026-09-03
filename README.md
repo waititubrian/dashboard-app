@@ -1,4 +1,20 @@
-A Next.js + TypeScript dashboard app, using Prisma over PostgreSQL.
+**Bizna Ops** — a Next.js + TypeScript dashboard app for managing users,
+products, and orders, with a revenue overview, using Prisma over
+PostgreSQL.
+
+## Features
+
+- **Dashboard** — at-a-glance stats (users, products, orders, revenue) and
+  a recent-orders table.
+- **Users / Products / Orders** — full CRUD for each, with order creation
+  automatically reserving product stock (and releasing it again if an
+  order is cancelled or refunded).
+- **Revenue** — totals, average order value, and a breakdown by product,
+  computed from completed orders.
+- Shared navigation across all pages (no more landing on a 404 at `/` —
+  it redirects to `/dashboard`), and a light/dark theme toggle.
+- UI built on [shadcn/ui](https://ui.shadcn.com); see
+  [UI and functional improvements](#ui-and-functional-improvements) below.
 
 ## Getting started (local development)
 
