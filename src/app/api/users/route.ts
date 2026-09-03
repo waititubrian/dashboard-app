@@ -1,9 +1,20 @@
+import { NextResponse } from "next/server";
+
 import { createUser, getUsers } from "@/services/user.service";
 
 export async function GET() {
-  const users = await getUsers();
+  try {
+    const users = await getUsers();
 
-  return Response.json(users);
+    return NextResponse.json(users);
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { error: "Failed to fetch users." },
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(request: Request) {
@@ -12,17 +23,15 @@ export async function POST(request: Request) {
 
     const user = await createUser(body.name, body.email);
 
-    return Response.json(user, {
-      status: 201,
-    });
+    return NextResponse.json(user, { status: 201 });
   } catch (error) {
-    return Response.json(
+    console.error(error);
+
+    return NextResponse.json(
       {
-        message: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Unable to create user.",
       },
-      {
-        status: 400,
-      },
+      { status: 400 },
     );
   }
 }

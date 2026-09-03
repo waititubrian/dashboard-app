@@ -1,23 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import Card from "@/components/ui/Card";
-import Spinner from "@/components/ui/Spinner";
-import Notification from "@/components/ui/Notification";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import Spinner from "@/components/ui/spinner";
 
 import type { DashboardData } from "@/types/dashboard";
+
+const statusBadgeVariant: Record<
+  string,
+  "default" | "outline" | "destructive" | "secondary"
+> = {
+  PENDING: "outline",
+  COMPLETED: "default",
+  CANCELLED: "destructive",
+  REFUNDED: "secondary",
+};
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
 
   const [loading, setLoading] = useState(true);
 
-  const [error, setError] = useState("");
-
   async function loadDashboard() {
     setLoading(true);
-    setError("");
 
     try {
       const response = await fetch("/api/dashboard");
@@ -32,7 +49,7 @@ export default function Dashboard() {
     } catch (error) {
       console.error(error);
 
-      setError(
+      toast.error(
         error instanceof Error ? error.message : "Failed to load dashboard.",
       );
     } finally {
@@ -52,18 +69,6 @@ export default function Dashboard() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="mx-auto max-w-7xl p-8">
-        <Notification
-          type="error"
-          message={error}
-          onClose={() => setError("")}
-        />
-      </div>
-    );
-  }
-
   if (!data) {
     return null;
   }
@@ -73,110 +78,108 @@ export default function Dashboard() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
 
-        <p className="mt-2 text-gray-400">Overview of your application.</p>
+        <p className="mt-2 text-muted-foreground">
+          Overview of your application.
+        </p>
       </div>
 
       <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <p className="text-sm text-gray-400">Total Users</p>
-
-          <p className="mt-2 text-3xl font-bold">{data.stats.totalUsers}</p>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Total Users</p>
+            <p className="mt-2 text-3xl font-bold">{data.stats.totalUsers}</p>
+          </CardContent>
         </Card>
 
         <Card>
-          <p className="text-sm text-gray-400">Total Products</p>
-
-          <p className="mt-2 text-3xl font-bold">{data.stats.totalProducts}</p>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Total Products</p>
+            <p className="mt-2 text-3xl font-bold">
+              {data.stats.totalProducts}
+            </p>
+          </CardContent>
         </Card>
 
         <Card>
-          <p className="text-sm text-gray-400">Total Orders</p>
-
-          <p className="mt-2 text-3xl font-bold">{data.stats.totalOrders}</p>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Total Orders</p>
+            <p className="mt-2 text-3xl font-bold">{data.stats.totalOrders}</p>
+          </CardContent>
         </Card>
 
         <Card>
-          <p className="text-sm text-gray-400">Total Revenue</p>
-
-          <p className="mt-2 text-3xl font-bold">
-            KSh {data.stats.totalRevenue.toLocaleString()}
-          </p>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Total Revenue</p>
+            <p className="mt-2 text-3xl font-bold">
+              KSh {data.stats.totalRevenue.toLocaleString()}
+            </p>
+          </CardContent>
         </Card>
       </div>
 
       <Card>
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">Recent Orders</h2>
+        <CardContent>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Recent Orders</h2>
+              <p className="text-sm text-muted-foreground">
+                Latest orders in the system
+              </p>
+            </div>
 
-            <p className="text-sm text-gray-400">Latest orders in the system</p>
+            <Button variant="outline" size="sm" onClick={loadDashboard}>
+              Refresh
+            </Button>
           </div>
 
-          <button
-            onClick={loadDashboard}
-            className="rounded border border-gray-600 px-4 py-2 text-sm hover:bg-gray-800"
-          >
-            Refresh
-          </button>
-        </div>
+          {data.recentOrders.length === 0 ? (
+            <p className="py-8 text-center text-muted-foreground">
+              No orders found.
+            </p>
+          ) : (
+            <div className="rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-center"></TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Product</TableHead>
+                    <TableHead className="text-center">Quantity</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
 
-        {data.recentOrders.length === 0 ? (
-          <p className="py-8 text-center text-gray-400">No orders found.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-700">
-              <thead className="bg-gray-800">
-                <tr>
-                  <th className="border border-gray-700 px-4 py-3">Order</th>
+                <TableBody>
+                  {data.recentOrders.map((order, index) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="text-center">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell>{order.customerName}</TableCell>
+                      <TableCell>{order.productName}</TableCell>
+                      <TableCell className="text-center">
+                        {order.quantity}
+                      </TableCell>
 
-                  <th className="border border-gray-700 px-4 py-3 text-left">
-                    Customer
-                  </th>
+                      <TableCell className="text-right font-semibold">
+                        KSh {order.total.toLocaleString()}
+                      </TableCell>
 
-                  <th className="border border-gray-700 px-4 py-3 text-left">
-                    Product
-                  </th>
-
-                  <th className="border border-gray-700 px-4 py-3">Quantity</th>
-
-                  <th className="border border-gray-700 px-4 py-3">Total</th>
-
-                  <th className="border border-gray-700 px-4 py-3">Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {data.recentOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td className="border border-gray-700 px-4 py-3 text-center">
-                      #{order.id}
-                    </td>
-
-                    <td className="border border-gray-700 px-4 py-3">
-                      {order.customerName}
-                    </td>
-
-                    <td className="border border-gray-700 px-4 py-3">
-                      {order.productName}
-                    </td>
-
-                    <td className="border border-gray-700 px-4 py-3 text-center">
-                      {order.quantity}
-                    </td>
-
-                    <td className="border border-gray-700 px-4 py-3 text-right font-semibold">
-                      KSh {order.total.toLocaleString()}
-                    </td>
-
-                    <td className="border border-gray-700 px-4 py-3 text-center">
-                      {order.status}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                      <TableCell className="text-center">
+                        <Badge
+                          variant={statusBadgeVariant[order.status] ?? "outline"}
+                        >
+                          {order.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
       </Card>
     </div>
   );

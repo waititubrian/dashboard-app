@@ -1,5 +1,7 @@
 import * as repository from "@/repositories/user.repository";
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function validateUserData(name: string, email: string) {
   if (!name.trim()) {
     throw new Error("Name is required.");
@@ -7,6 +9,10 @@ function validateUserData(name: string, email: string) {
 
   if (!email.trim()) {
     throw new Error("Email is required.");
+  }
+
+  if (!EMAIL_PATTERN.test(email.trim())) {
+    throw new Error("Please enter a valid email address.");
   }
 }
 

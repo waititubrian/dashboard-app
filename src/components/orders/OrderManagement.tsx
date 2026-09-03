@@ -1,41 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import type { Order } from "@/types/order";
 import type { Product } from "@/types/product";
 import type { User } from "@/types/user";
 
-import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
-import Spinner from "@/components/ui/Spinner";
-import Notification from "@/components/ui/Notification";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import Spinner from "@/components/ui/spinner";
 
 import OrderForm from "./OrderForm";
 import OrderTable from "./OrderTable";
 
-type NotificationState = {
-  type: "success" | "error";
-  message: string;
-};
-
 export default function OrderManagement() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [products, setProducts] =
-    useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const [selectedOrder, setSelectedOrder] =
-    useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  const [orderToDelete, setOrderToDelete] =
-    useState<Order | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-
-  const [notification, setNotification] =
-    useState<NotificationState | null>(null);
 
   useEffect(() => {
     loadData();
@@ -45,29 +40,18 @@ export default function OrderManagement() {
     setLoading(true);
 
     try {
-      const [
-        ordersResponse,
-        usersResponse,
-        productsResponse,
-      ] = await Promise.all([
-        fetch("/api/orders"),
-        fetch("/api/users"),
-        fetch("/api/products"),
-      ]);
+      const [ordersResponse, usersResponse, productsResponse] =
+        await Promise.all([
+          fetch("/api/orders"),
+          fetch("/api/users"),
+          fetch("/api/products"),
+        ]);
 
-      if (
-        !ordersResponse.ok ||
-        !usersResponse.ok ||
-        !productsResponse.ok
-      ) {
+      if (!ordersResponse.ok || !usersResponse.ok || !productsResponse.ok) {
         throw new Error("Failed to load data.");
       }
 
-      const [
-        ordersData,
-        usersData,
-        productsData,
-      ] = await Promise.all([
+      const [ordersData, usersData, productsData] = await Promise.all([
         ordersResponse.json(),
         usersResponse.json(),
         productsResponse.json(),
@@ -79,24 +63,16 @@ export default function OrderManagement() {
     } catch (error) {
       console.error(error);
 
-      setNotification({
-        type: "error",
-        message: "Unable to load order data.",
-      });
+      toast.error("Unable to load order data.");
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleOrderSaved(
-    message: string
-  ) {
+  async function handleOrderSaved(message: string) {
     setSelectedOrder(null);
 
-    setNotification({
-      type: "success",
-      message,
-    });
+    toast.success(message);
 
     await loadData();
   }
@@ -121,40 +97,27 @@ export default function OrderManagement() {
     setDeleting(true);
 
     try {
-      const response = await fetch(
-        `/api/orders/${orderToDelete.id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`/api/orders/${orderToDelete.id}`, {
+        method: "DELETE",
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || "Unable to delete order."
-        );
+        throw new Error(data.error || "Unable to delete order.");
       }
 
       setOrderToDelete(null);
 
-      setNotification({
-        type: "success",
-        message:
-          "Order deleted successfully.",
-      });
+      toast.success("Order deleted successfully.");
 
       await loadData();
     } catch (error) {
       console.error(error);
 
-      setNotification({
-        type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unable to delete order.",
-      });
+      toast.error(
+        error instanceof Error ? error.message : "Unable to delete order.",
+      );
     } finally {
       setDeleting(false);
     }
@@ -162,26 +125,13 @@ export default function OrderManagement() {
 
   return (
     <div className="mx-auto max-w-7xl p-8">
-
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">
-          Order Management
-        </h1>
+        <h1 className="text-3xl font-bold">Order Management</h1>
 
-        <p className="mt-2 text-gray-400">
+        <p className="mt-2 text-muted-foreground">
           Total Orders: {orders.length}
         </p>
       </div>
-
-      {notification && (
-        <Notification
-          type={notification.type}
-          message={notification.message}
-          onClose={() =>
-            setNotification(null)
-          }
-        />
-      )}
 
       <OrderForm
         selectedOrder={selectedOrder}
@@ -203,40 +153,42 @@ export default function OrderManagement() {
         />
       )}
 
-      <Modal
-        isOpen={orderToDelete !== null}
-        title="Delete Order"
-        onClose={() => {
-          if (!deleting) {
+      <Dialog
+        open={orderToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleting) {
             setOrderToDelete(null);
           }
         }}
       >
-        <p className="mb-6">
-          Are you sure you want to delete order #
-          {orderToDelete?.id}?
-        </p>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Order</DialogTitle>
+          </DialogHeader>
 
-        <div className="flex justify-end gap-3">
-          <Button
-            variant="secondary"
-            disabled={deleting}
-            onClick={() =>
-              setOrderToDelete(null)
-            }
-          >
-            Cancel
-          </Button>
+          <p className="text-muted-foreground">
+            Are you sure you want to delete order #{orderToDelete?.id}?
+          </p>
 
-          <Button
-            variant="danger"
-            loading={deleting}
-            onClick={confirmDelete}
-          >
-            Delete
-          </Button>
-        </div>
-      </Modal>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              disabled={deleting}
+              onClick={() => setOrderToDelete(null)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              variant="destructive"
+              disabled={deleting}
+              onClick={confirmDelete}
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

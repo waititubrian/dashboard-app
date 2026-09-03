@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import Card from "@/components/ui/Card";
-import Spinner from "@/components/ui/Spinner";
-import Notification from "@/components/ui/Notification";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import Spinner from "@/components/ui/spinner";
 
 import RevenueStats from "./RevenueStats";
 import RevenueTable from "./RevenueTable";
@@ -26,11 +34,8 @@ export default function RevenueManagement() {
 
   const [loading, setLoading] = useState(true);
 
-  const [error, setError] = useState("");
-
   async function loadRevenue() {
     setLoading(true);
-    setError("");
 
     try {
       const response = await fetch("/api/revenue");
@@ -45,7 +50,7 @@ export default function RevenueManagement() {
     } catch (error) {
       console.error(error);
 
-      setError(
+      toast.error(
         error instanceof Error ? error.message : "Failed to load revenue.",
       );
     } finally {
@@ -65,18 +70,6 @@ export default function RevenueManagement() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="mx-auto max-w-7xl p-8">
-        <Notification
-          type="error"
-          message={error}
-          onClose={() => setError("")}
-        />
-      </div>
-    );
-  }
-
   if (!data) {
     return null;
   }
@@ -86,7 +79,7 @@ export default function RevenueManagement() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Revenue</h1>
 
-        <p className="mt-2 text-gray-400">
+        <p className="mt-2 text-muted-foreground">
           Revenue generated from completed orders.
         </p>
       </div>
@@ -98,53 +91,51 @@ export default function RevenueManagement() {
       />
 
       <Card className="mb-8">
-        <h2 className="mb-6 text-xl font-semibold">Revenue by Product</h2>
+        <CardContent>
+          <h2 className="mb-6 text-xl font-semibold">Revenue by Product</h2>
 
-        {data.products.length === 0 ? (
-          <p className="text-gray-400">No revenue data available.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-700">
-              <thead className="bg-gray-800">
-                <tr>
-                  <th className="border border-gray-700 px-4 py-3 text-left">
-                    Product
-                  </th>
+          {data.products.length === 0 ? (
+            <p className="text-muted-foreground">No revenue data available.</p>
+          ) : (
+            <div className="rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead className="text-center">
+                      Quantity Sold
+                    </TableHead>
+                    <TableHead className="text-right">Revenue</TableHead>
+                  </TableRow>
+                </TableHeader>
 
-                  <th className="border border-gray-700 px-4 py-3">
-                    Quantity Sold
-                  </th>
+                <TableBody>
+                  {data.products.map((product) => (
+                    <TableRow key={product.productId}>
+                      <TableCell>{product.productName}</TableCell>
 
-                  <th className="border border-gray-700 px-4 py-3">Revenue</th>
-                </tr>
-              </thead>
+                      <TableCell className="text-center">
+                        {product.totalQuantity}
+                      </TableCell>
 
-              <tbody>
-                {data.products.map((product) => (
-                  <tr key={product.productId}>
-                    <td className="border border-gray-700 px-4 py-3">
-                      {product.productName}
-                    </td>
-
-                    <td className="border border-gray-700 px-4 py-3 text-center">
-                      {product.totalQuantity}
-                    </td>
-
-                    <td className="border border-gray-700 px-4 py-3 text-right font-semibold">
-                      KSh {product.totalRevenue.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                      <TableCell className="text-right font-semibold">
+                        KSh {product.totalRevenue.toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
       </Card>
 
       <Card>
-        <h2 className="mb-6 text-xl font-semibold">Completed Orders</h2>
+        <CardContent>
+          <h2 className="mb-6 text-xl font-semibold">Completed Orders</h2>
 
-        <RevenueTable orders={data.orders} />
+          <RevenueTable orders={data.orders} />
+        </CardContent>
       </Card>
     </div>
   );

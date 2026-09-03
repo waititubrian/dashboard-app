@@ -1,36 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { Product } from "@/types/product";
 
-import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
-import Spinner from "@/components/ui/Spinner";
-import Notification from "@/components/ui/Notification";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import Spinner from "@/components/ui/spinner";
 
 import ProductForm from "./ProductForm";
 import ProductTable from "./ProductTable";
 
-type NotificationState = {
-  type: "success" | "error";
-  message: string;
-};
-
 export default function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([]);
 
-  const [selectedProduct, setSelectedProduct] =
-    useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(
+    null,
+  );
 
-  const [productToDelete, setProductToDelete] =
-    useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(
+    null,
+  );
 
   const [loading, setLoading] = useState(true);
 
   const [deleting, setDeleting] = useState(false);
-
-  const [notification, setNotification] =
-    useState<NotificationState | null>(null);
 
   useEffect(() => {
     loadProducts();
@@ -52,20 +52,14 @@ export default function ProductManagement() {
     } catch (error) {
       console.error(error);
 
-      setNotification({
-        type: "error",
-        message: "Unable to load products.",
-      });
+      toast.error("Unable to load products.");
     } finally {
       setLoading(false);
     }
   }
 
   async function handleProductSaved(message: string) {
-    setNotification({
-      type: "success",
-      message,
-    });
+    toast.success(message);
 
     await loadProducts();
   }
@@ -90,48 +84,33 @@ export default function ProductManagement() {
     setDeleting(true);
 
     try {
-      const response = await fetch(
-        `/api/products/${productToDelete.id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`/api/products/${productToDelete.id}`, {
+        method: "DELETE",
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || "Unable to delete product."
-        );
+        throw new Error(data.error || "Unable to delete product.");
       }
 
-      const deletedProductName =
-        productToDelete.name;
+      const deletedProductName = productToDelete.name;
 
-      if (
-        selectedProduct?.id === productToDelete.id
-      ) {
+      if (selectedProduct?.id === productToDelete.id) {
         setSelectedProduct(null);
       }
 
       setProductToDelete(null);
 
-      setNotification({
-        type: "success",
-        message: `${deletedProductName} was deleted successfully.`,
-      });
+      toast.success(`${deletedProductName} was deleted successfully.`);
 
       await loadProducts();
     } catch (error) {
       console.error(error);
 
-      setNotification({
-        type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unable to delete product.",
-      });
+      toast.error(
+        error instanceof Error ? error.message : "Unable to delete product.",
+      );
     } finally {
       setDeleting(false);
     }
@@ -139,22 +118,11 @@ export default function ProductManagement() {
 
   return (
     <div className="mx-auto max-w-7xl p-8">
+      <h1 className="mb-2 text-3xl font-bold">Product Management</h1>
 
-      <h1 className="mb-2 text-3xl font-bold">
-        Product Management
-      </h1>
-
-      <p className="mb-6 text-gray-400">
+      <p className="mb-6 text-muted-foreground">
         Total Products: {products.length}
       </p>
-
-      {notification && (
-        <Notification
-          type={notification.type}
-          message={notification.message}
-          onClose={() => setNotification(null)}
-        />
-      )}
 
       <ProductForm
         selectedProduct={selectedProduct}
@@ -174,43 +142,46 @@ export default function ProductManagement() {
         />
       )}
 
-      <Modal
-        isOpen={productToDelete !== null}
-        title="Delete Product"
-        onClose={() => {
-          if (!deleting) {
+      <Dialog
+        open={productToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleting) {
             setProductToDelete(null);
           }
         }}
       >
-        <p className="mb-6 text-gray-300">
-          Are you sure you want to delete{" "}
-          <span className="font-semibold text-white">
-            {productToDelete?.name}
-          </span>
-          ?
-        </p>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Product</DialogTitle>
+          </DialogHeader>
 
-        <div className="flex justify-end gap-3">
-          <Button
-            variant="secondary"
-            disabled={deleting}
-            onClick={() =>
-              setProductToDelete(null)
-            }
-          >
-            Cancel
-          </Button>
+          <p className="text-muted-foreground">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-foreground">
+              {productToDelete?.name}
+            </span>
+            ?
+          </p>
 
-          <Button
-            variant="danger"
-            loading={deleting}
-            onClick={confirmDeleteProduct}
-          >
-            Delete
-          </Button>
-        </div>
-      </Modal>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              disabled={deleting}
+              onClick={() => setProductToDelete(null)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              variant="destructive"
+              disabled={deleting}
+              onClick={confirmDeleteProduct}
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
