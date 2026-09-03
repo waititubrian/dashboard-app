@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { User } from "@/types/user";
 
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Input from "@/components/ui/Input";
-import Notification from "../ui/Notification";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface UserFormProps {
   selectedUser: User | null;
@@ -22,7 +23,6 @@ export default function UserForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     if (selectedUser) {
@@ -35,23 +35,21 @@ export default function UserForm({
   }, [selectedUser]);
 
   async function saveUser() {
-    setError("");
-
     const trimmedName = name.trim();
     const trimmedEmail = email.trim();
 
     if (!trimmedName) {
-      setError("Name is required.");
+      toast.error("Name is required.");
       return;
     }
 
     if (!trimmedEmail) {
-      setError("Email is required.");
+      toast.error("Email is required.");
       return;
     }
 
     if (!trimmedEmail.includes("@")) {
-      setError("Please enter a valid email address.");
+      toast.error("Please enter a valid email address.");
       return;
     }
 
@@ -84,7 +82,6 @@ export default function UserForm({
 
       setName("");
       setEmail("");
-      setError("");
 
       onCancelEdit();
 
@@ -96,7 +93,7 @@ export default function UserForm({
     } catch (error) {
       console.error(error);
 
-      setError(error instanceof Error ? error.message : "Unable to save user.");
+      toast.error(error instanceof Error ? error.message : "Unable to save user.");
     } finally {
       setLoading(false);
     }
@@ -104,53 +101,61 @@ export default function UserForm({
 
   return (
     <Card className="mb-8">
-      <h2 className="mb-6 text-xl font-semibold">
-        {selectedUser ? "Update User" : "Create User"}
-      </h2>
+      <CardContent>
+        <h2 className="mb-6 text-xl font-semibold">
+          {selectedUser ? "Update User" : "Create User"}
+        </h2>
 
-      {error && (
-        <Notification
-          type="error"
-          message={error}
-          onClose={() => setError("")}
-        />
-      )}
+        <form
+          onSubmit={async (event) => {
+            event.preventDefault(); // Stops page reload
+            await saveUser();
+          }}
+        >
+          <div className="mb-4">
+            <Label htmlFor="user-name" className="mb-2">
+              Name
+            </Label>
+            <Input
+              id="user-name"
+              value={name}
+              placeholder="Brian Waititu"
+              required
+              onChange={(event) => setName(event.target.value)}
+            />
+          </div>
 
-      <form
-        onSubmit={async (event) => {
-          event.preventDefault(); // Stops page reload
-          await saveUser();
-        }}
-      >
-        <Input
-          label="Name"
-          value={name}
-          placeholder="Brian Waititu"
-          required
-          onChange={setName}
-        />
+          <div className="mb-4">
+            <Label htmlFor="user-email" className="mb-2">
+              Email
+            </Label>
+            <Input
+              id="user-email"
+              type="email"
+              value={email}
+              placeholder="brian@example.com"
+              required
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </div>
 
-        <Input
-          label="Email"
-          type="email"
-          value={email}
-          placeholder="brian@example.com"
-          required
-          onChange={setEmail}
-        />
-
-        <div className="flex gap-3">
-          <Button type="submit" loading={loading}>
-            {selectedUser ? "Update User" : "Create User"}
-          </Button>
-
-          {selectedUser && (
-            <Button type="button" variant="secondary" onClick={onCancelEdit}>
-              Cancel
+          <div className="flex gap-3">
+            <Button type="submit" disabled={loading}>
+              {loading
+                ? "Saving..."
+                : selectedUser
+                  ? "Update User"
+                  : "Create User"}
             </Button>
-          )}
-        </div>
-      </form>
+
+            {selectedUser && (
+              <Button type="button" variant="secondary" onClick={onCancelEdit}>
+                Cancel
+              </Button>
+            )}
+          </div>
+        </form>
+      </CardContent>
     </Card>
   );
 }

@@ -1,5 +1,14 @@
 import type { RevenueByOrder } from "@/types/revenue";
 
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+
 interface RevenueTableProps {
   orders: RevenueByOrder[];
 }
@@ -7,71 +16,50 @@ interface RevenueTableProps {
 export default function RevenueTable({ orders }: RevenueTableProps) {
   if (orders.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-700 p-8 text-center text-gray-400">
+      <div className="rounded-lg border border-border p-8 text-center text-muted-foreground">
         No completed orders yet.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border border-gray-700">
-        <thead className="bg-gray-800">
-          <tr>
-            <th className="border border-gray-700 px-4 py-3">Order</th>
+    <div className="rounded-lg border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-center"></TableHead>
+            <TableHead>Customer</TableHead>
+            <TableHead>Product</TableHead>
+            <TableHead className="text-center">Quantity</TableHead>
+            <TableHead className="text-right">Unit Price</TableHead>
+            <TableHead className="text-right">Revenue</TableHead>
+            <TableHead>Date</TableHead>
+          </TableRow>
+        </TableHeader>
 
-            <th className="border border-gray-700 px-4 py-3 text-left">
-              Customer
-            </th>
+        <TableBody>
+          {orders.map((order, index) => (
+            <TableRow key={order.orderId}>
+              <TableCell className="text-center">{index + 1}</TableCell>
+              <TableCell>{order.customerName}</TableCell>
+              <TableCell>{order.productName}</TableCell>
+              <TableCell className="text-center">{order.quantity}</TableCell>
 
-            <th className="border border-gray-700 px-4 py-3 text-left">
-              Product
-            </th>
-
-            <th className="border border-gray-700 px-4 py-3">Quantity</th>
-
-            <th className="border border-gray-700 px-4 py-3">Unit Price</th>
-
-            <th className="border border-gray-700 px-4 py-3">Revenue</th>
-
-            <th className="border border-gray-700 px-4 py-3">Date</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {orders.map((order) => (
-            <tr key={order.orderId}>
-              <td className="border border-gray-700 px-4 py-3 text-center">
-                #{order.orderId}
-              </td>
-
-              <td className="border border-gray-700 px-4 py-3">
-                {order.customerName}
-              </td>
-
-              <td className="border border-gray-700 px-4 py-3">
-                {order.productName}
-              </td>
-
-              <td className="border border-gray-700 px-4 py-3 text-center">
-                {order.quantity}
-              </td>
-
-              <td className="border border-gray-700 px-4 py-3 text-right">
+              <TableCell className="text-right">
                 KSh {order.unitPrice.toLocaleString()}
-              </td>
+              </TableCell>
 
-              <td className="border border-gray-700 px-4 py-3 text-right font-semibold">
+              <TableCell className="text-right font-semibold">
                 KSh {order.total.toLocaleString()}
-              </td>
+              </TableCell>
 
-              <td className="border border-gray-700 px-4 py-3">
+              <TableCell>
                 {new Date(order.createdAt).toLocaleDateString()}
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }
