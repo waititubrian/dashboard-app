@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
+import ThemeToggle from "./ThemeToggle";
+
 const links = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/products", label: "Products" },
@@ -41,6 +43,10 @@ export default function NavBar() {
             </Link>
           );
         })}
+
+        <div className="ml-auto">
+          <ThemeToggle />
+        </div>
       </nav>
     </header>
   );

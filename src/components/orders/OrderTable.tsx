@@ -45,7 +45,7 @@ export default function OrderTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-center">ID</TableHead>
+            <TableHead className="text-center"></TableHead>
             <TableHead>Customer</TableHead>
             <TableHead>Product</TableHead>
             <TableHead className="text-center">Quantity</TableHead>
@@ -57,12 +57,12 @@ export default function OrderTable({
         </TableHeader>
 
         <TableBody>
-          {orders.map((order) => {
+          {orders.map((order, index) => {
             const total = Number(order.unitPrice) * order.quantity;
 
             return (
               <TableRow key={order.id}>
-                <TableCell className="text-center">{order.id}</TableCell>
+                <TableCell className="text-center">{index + 1}</TableCell>
 
                 <TableCell>
                   <div className="font-medium">{order.user.name}</div>

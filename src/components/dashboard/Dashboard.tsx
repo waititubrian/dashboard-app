@@ -141,7 +141,7 @@ export default function Dashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-center">Order</TableHead>
+                    <TableHead className="text-center"></TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Product</TableHead>
                     <TableHead className="text-center">Quantity</TableHead>
@@ -151,10 +151,10 @@ export default function Dashboard() {
                 </TableHeader>
 
                 <TableBody>
-                  {data.recentOrders.map((order) => (
+                  {data.recentOrders.map((order, index) => (
                     <TableRow key={order.id}>
                       <TableCell className="text-center">
-                        #{order.id}
+                        {index + 1}
                       </TableCell>
                       <TableCell>{order.customerName}</TableCell>
                       <TableCell>{order.productName}</TableCell>

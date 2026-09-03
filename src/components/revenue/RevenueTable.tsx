@@ -27,7 +27,7 @@ export default function RevenueTable({ orders }: RevenueTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-center">Order</TableHead>
+            <TableHead className="text-center"></TableHead>
             <TableHead>Customer</TableHead>
             <TableHead>Product</TableHead>
             <TableHead className="text-center">Quantity</TableHead>
@@ -38,9 +38,9 @@ export default function RevenueTable({ orders }: RevenueTableProps) {
         </TableHeader>
 
         <TableBody>
-          {orders.map((order) => (
+          {orders.map((order, index) => (
             <TableRow key={order.orderId}>
-              <TableCell className="text-center">#{order.orderId}</TableCell>
+              <TableCell className="text-center">{index + 1}</TableCell>
               <TableCell>{order.customerName}</TableCell>
               <TableCell>{order.productName}</TableCell>
               <TableCell className="text-center">{order.quantity}</TableCell>
