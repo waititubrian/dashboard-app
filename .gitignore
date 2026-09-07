@@ -41,6 +41,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# local-only docs (not tracked)
+/docs
+
 # AI agent instructions (local only)
 CLAUDE.md
 AGENTS.md
